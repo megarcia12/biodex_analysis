@@ -1,4 +1,4 @@
-function [data,metadata] = importBiodex(filename, dataLines)
+function [data,cmax,tmax,metadata] = importBiodex(filename, dataLines)
 %IMPORTFILE Import data from a text file
 %  [SET, REP, MSEC, TORQUE, POSITION, POS_ANAT, VELOCITY] =
 %  IMPORTFILE(FILENAME) reads data from text file FILENAME for the
@@ -61,8 +61,17 @@ for na = 1:length(angles)
         crep = ['rep',num2str(nReps)] ;
         itrial = (ind.(cangle)) & (ind.(crep)) ;
         data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)] ; % Saves data for time and torque
+        if sum(data.(cangle).(crep)(:,2)) > 0
+            [cmax.(cangle).(crep),~] = max(data.(cangle).(crep)(:,2)) ;
+        elseif sum(data.(cangle).(crep)(:,2)) < 0
+            [cmax.(cangle).(crep),~] = max(-data.(cangle).(crep)(:,2)) ;
+            cmax.(cangle).(crep) = -cmax.(cangle).(crep);
+        else
+            cmax.(cangle).(crep) = 0;
+        end
     end
-    
+
+    tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2;
 end
 
 %% Sets up Meta Data Analysis
