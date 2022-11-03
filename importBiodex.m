@@ -58,16 +58,16 @@ for na = 1:length(angles)
     cangle = (['a',num2str(angles(1,na))]) ; % Sets current angle
     
     for nReps = 1:2
-        crep = ['rep',num2str(nReps)] ;
-        itrial = (ind.(cangle)) & (ind.(crep)) ;
+        crep = ['rep',num2str(nReps)] ; % Sets current rep
+        itrial = (ind.(cangle)) & (ind.(crep)) ; % Creates the trial to be used
         data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)] ; % Saves data for time and torque
-        if sum(data.(cangle).(crep)(:,2)) > 0
+        if sum(data.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
             [cmax.(cangle).(crep),~] = max(data.(cangle).(crep)(:,2)) ;
-        elseif sum(data.(cangle).(crep)(:,2)) < 0
+        elseif sum(data.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
             [cmax.(cangle).(crep),~] = max(-data.(cangle).(crep)(:,2)) ;
-            cmax.(cangle).(crep) = -cmax.(cangle).(crep);
-        else
-            cmax.(cangle).(crep) = 0;
+            cmax.(cangle).(crep) = -cmax.(cangle).(crep); % Changes the value back to a negative after finding max 
+        else % Takes care of any empty fields (lost data, excluded data, ect)
+            cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
         end
     end
 
