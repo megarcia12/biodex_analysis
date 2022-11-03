@@ -71,7 +71,7 @@ for na = 1:length(angles)
         end
     end
 
-    tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2;
+    tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2; % Manual calculation of the max for each angle 
 end
 
 %% Sets up Meta Data Analysis
