@@ -7,23 +7,23 @@
 close all; clear; clc;
 
 %% File Location
-PathName = uigetdir('.txt','Select the file you wish to analyize'); % only looks for .txt files
+PathName = uigetdir('.txt','Select the file you wish to analyize') ; % only looks for .txt files
 % Get a list of all files in the folder with desired pattern
-filePattern = fullfile(PathName, '**/*.txt');
-Files = dir(filePattern);
-Files = {Files.name}';
+filePattern = fullfile(PathName, '**/*.txt') ;
+Files = dir(filePattern) ;
+Files = {Files.name}' ;
 
 %% File splitting
-fn=regexp(Files,['\w*(?=.txt)'],'match');
+fn=regexp(Files,'\w*(?=.txt)','match') ;
 fname = [fn{:,:}]' ;
 
-cng = regexp(fname,'_','split');
-change = [cng{:,:}]';
+cng = regexp(fname,'_','split') ;
+change = [cng{:,:}]' ;
 num_subs_times_parameters = length(change) ;
 change = reshape(change,[num_subs_times_parameters./length(Files),length(Files)]) ;
 
 %% Assigns Information based on regular trial or iterative change
-[m,~] = size(change);
+[m,~] = size(change) ;
 if m == 3
     subject = change(1,:) ;
     joint = change(2,: );
@@ -36,7 +36,7 @@ else
 end
 
 for n=1:length(Files)
-    trial{1,n} = [joint{1,n},'_',direc{1,n}];
+    trial{1,n} = [joint{1,n},'_',direc{1,n}] ;
 end
 
 %% Get the data from the files
@@ -47,16 +47,16 @@ for nfiles =1:length(Files)
     [deMVC.(subject{1,nfiles}).(trial{1,nfiles}).rmvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).pmvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc,...
-        metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata]= importBiodex([PathName,'\',Files{nfiles,1}]);
+        metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata]= importBiodex([PathName,'\',Files{nfiles,1}]) ;
     
     %% Checks each trial against metadata to make sure there are no errors in naming
-    csub = convertCharsToStrings(csub);
-    cjoint = convertCharsToStrings(cjoint);
-    cdirection = convertCharsToStrings(cdirection);
+    csub = convertCharsToStrings(csub) ;
+    cjoint = convertCharsToStrings(cjoint) ;
+    cdirection = convertCharsToStrings(cdirection) ;
     
-    j = metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.subject;
-    k =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.joint;
-    l =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.match;
+    j = metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.subject ;
+    k =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.joint ;
+    l =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.match ;
     
     if strcmpi(csub,j) ~= 1
         fprintf('Expected: %s_%s_%s\n', csub, cjoint, cdirection)
@@ -64,7 +64,7 @@ for nfiles =1:length(Files)
         fprintf('The file is located in %s\n', PathName)
         if m ~=3
             citer = (iteration{1,nfiles}) ;
-            citer = convertCharsToStrings(citer);
+            citer = convertCharsToStrings(citer) ;
             fprintf('Using iteration code %s\n', citer)
         end
         break
@@ -75,7 +75,7 @@ for nfiles =1:length(Files)
         fprintf('The file is located in %s\n', PathName)
         if m ~=3
             citer = (iteration{1,nfiles}) ;
-            citer = convertCharsToStrings(citer);
+            citer = convertCharsToStrings(citer) ;
             fprintf('Using iteration code %s\n', citer)
         end
         break
@@ -86,7 +86,7 @@ for nfiles =1:length(Files)
         fprintf('The file is located in %s\n', PathName)
         if m ~=3
             citer = (iteration{1,nfiles}) ;
-            citer = convertCharsToStrings(citer);
+            citer = convertCharsToStrings(citer) ;
             fprintf('Using iteration code %s\n', citer)
         end
         break
@@ -98,3 +98,16 @@ clear cdirection cjoint csub ctrial j k l nfiles
 clear num_sub_times_parameters subject testingparameter trial
 clear direc Files joint num_subs_times_parameters s filePattern
 clear n change fn fname cng m iteration
+
+%% Folder Check/Creation
+dataFolder = uigetdir('D:\', 'Select Location you would like to save this data') ;
+location = fullfile(dataFolder, 'Biodex_Processed_Data');
+
+if ~exist(location, 'dir')
+    mkdir(dataFolder,'Biodex_Processed_Data')
+end
+clear PathName dataFolder
+save(fullfile(location, 'deMVC'))
+
+%% Var clearing
+clear location
