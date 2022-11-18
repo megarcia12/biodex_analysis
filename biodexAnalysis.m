@@ -94,20 +94,33 @@ for nfiles =1:length(Files)
 end
 
 %% Var clearing
-clear cdirection cjoint csub ctrial j k l nfiles
+clear cdirection cjoint ctrial j k l nfiles
 clear num_sub_times_parameters subject testingparameter trial
 clear direc Files joint num_subs_times_parameters s filePattern
-clear n change fn fname cng m iteration
 
-%% Folder Check/Creation
-dataFolder = uigetdir('D:\', 'Select Location you would like to save this data') ;
-location = fullfile(dataFolder, 'Biodex_Processed_Data');
 
-if ~exist(location, 'dir')
-    mkdir(dataFolder,'Biodex_Processed_Data')
+%% Save check
+fprintf('Would you like to save this data?\n')
+promt = input('Save -> [Y|N]\n','s') ;
+exp = promt ;
+if strcmpi(exp,'y')
+    %% Folder Check/Creation
+    dataFolder = uigetdir('D:\', 'Select Location you would like to save this data') ;
+    location = fullfile(dataFolder, 'Biodex_Processed_Data');
+
+    if ~exist(location, 'dir')
+        mkdir(dataFolder,'Biodex_Processed_Data')
+    end
+    %% Var clearing
+    clear n change fn fname cng m iteration exp promt
+    clear PathName dataFolder
+    csub = sprintf(csub);
+    deMVC.dateModified = datetime;
+    save(fullfile(location, csub))
+    %% Var clearing
+    clear location csub
+else
+    %% Var clearing
+    clear n change fn fname cng m iteration
+    clear location exp promt csub
 end
-clear PathName dataFolder
-save(fullfile(location, 'deMVC'))
-
-%% Var clearing
-clear location
