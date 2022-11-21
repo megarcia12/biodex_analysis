@@ -1,7 +1,6 @@
 % M3 Lab
 % biodexAnalysis.m
 % Created 26 October 2022
-% Updated 8 November 2022
 % Mario Garcia | nfq3bd@virginia.edu & Emily McCain | ypj4nt@virginia.edu
 
 close all; clear; clc;
