@@ -1,8 +1,7 @@
 % M3 Lab
 % biodexAnalysis.m
 % Created 26 October 2022
-% Mario Garcia | nfq3bd@virginia.edu & Emily McCain | ypj4nt@virginia.edu
-
+% Mario Garcia | nfq3bd@virginia.edu 
 close all; clear; clc;
 
 %% File Location
@@ -23,15 +22,15 @@ change = reshape(change,[num_subs_times_parameters./length(Files),length(Files)]
 
 %% Assigns Information based on regular trial or iterative change
 [m,~] = size(change) ;
-if m == 3
+if m == 4
     subject = change(1,:) ;
-    joint = change(2,: );
-    direc = change(3,:) ;
+    joint = change(3,: );
+    direc = change(4,:) ;
 else
     iteration = change(1,:);
     subject = change(2,:) ;
-    joint = change(3,: );
-    direc = change(4,:) ;
+    joint = change(4,: );
+    direc = change(5,:) ;
 end
 
 for n=1:length(Files)
@@ -61,7 +60,7 @@ for nfiles =1:length(Files)
         fprintf('Expected: %s_%s_%s\n', csub, cjoint, cdirection)
         fprintf('The metadata subject code %s does not match for %s_%s_%s.\n', j, csub, cjoint, cdirection)
         fprintf('The file is located in %s\n', PathName)
-        if m ~=3
+        if m ~=4
             citer = (iteration{1,nfiles}) ;
             citer = convertCharsToStrings(citer) ;
             fprintf('Using iteration code %s\n', citer)
@@ -72,7 +71,7 @@ for nfiles =1:length(Files)
     if strcmpi(cjoint,k) ~= 1
         fprintf('The metadata subject joint %s does not match for %s_%s_%s.\n', k, csub, cjoint, cdirection)
         fprintf('The file is located in %s\n', PathName)
-        if m ~=3
+        if m ~=4
             citer = (iteration{1,nfiles}) ;
             citer = convertCharsToStrings(citer) ;
             fprintf('Using iteration code %s\n', citer)
@@ -83,7 +82,7 @@ for nfiles =1:length(Files)
     if strcmpi(cdirection,l) ~= 1
         fprintf('The metadata subject direction %s does not match for %s_%s_%s.\n', l, csub, cjoint, cdirection)
         fprintf('The file is located in %s\n', PathName)
-        if m ~=3
+        if m ~=4
             citer = (iteration{1,nfiles}) ;
             citer = convertCharsToStrings(citer) ;
             fprintf('Using iteration code %s\n', citer)
@@ -121,5 +120,5 @@ if strcmpi(exp,'y')
 else
     %% Var clearing
     clear n change fn fname cng m iteration
-    clear location exp promt csub
+    clear location exp promt csub PathName
 end
