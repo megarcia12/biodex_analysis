@@ -18,4 +18,3 @@ for i = 1:length(matFiles) % Determines how many files will be imported
     clear matdata
 end
 clear baseFileName filePattern fullFileName i matFiles pathName tempName
-

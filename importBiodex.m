@@ -88,25 +88,27 @@ else
         else % Takes care of any empty fields (lost data, excluded data, ect)
             cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
         end
-    end
-
-    for na = 2:2:length(angles)
-        ind.(['a',num2str(angles(1,na))]) = (tbl.Set==na) ;
-        cangle = (['a',num2str(angles(1,na))]) ; % Sets current angle
-        crep = ['rep',num2str(2)] ; % Sets current rep
-        itrial = (ind.(cangle)); % Creates the trial to be used
-        data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)] ; % Saves data for time and torque
-        if sum(data.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
-            [cmax.(cangle).(crep),~] = max(data.(cangle).(crep)(:,2)) ;
-        elseif sum(data.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
-            [cmax.(cangle).(crep),~] = max(-data.(cangle).(crep)(:,2)) ;
-            cmax.(cangle).(crep) = -cmax.(cangle).(crep); % Changes the value back to a negative after finding max
-        else % Takes care of any empty fields (lost data, excluded data, ect)
-            cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
+        for na = 2:2:length(angles)
+            ind.(['a',num2str(angles(1,na))]) = (tbl.Set==na) ;
+            cangle = (['a',num2str(angles(1,na))]) ; % Sets current angle
+            crep = ['rep',num2str(2)] ; % Sets current rep
+            itrial = (ind.(cangle)); % Creates the trial to be used
+            data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)] ; % Saves data for time and torque
+            if sum(data.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
+                [cmax.(cangle).(crep),~] = max(data.(cangle).(crep)(:,2)) ;
+            elseif sum(data.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
+                [cmax.(cangle).(crep),~] = max(-data.(cangle).(crep)(:,2)) ;
+                cmax.(cangle).(crep) = -cmax.(cangle).(crep); % Changes the value back to a negative after finding max
+            else % Takes care of any empty fields (lost data, excluded data, ect)
+                cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
+            end
         end
-    end
 
+    end
+    for na = 1:length(angles)
+        cangle = (['a',num2str(angles(1,na))]) ; % Sets current angle
     tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2; % Manual calculation of the max for each angle
+    end
 end
 
 
