@@ -1,90 +1,125 @@
 % M3 Lab
 % biodexAnalysis.m
 % Created 26 October 2022
-% Mario Garcia | nfq3bd@virginia.edu 
+% Mario Garcia | nfq3bd@virginia.edu
 close all; clear; clc;
 
 %% File Location
-PathName = uigetdir('.txt','Select the file you wish to analyize') ; % only looks for .txt files
+PathName = uigetdir('.txt','Select the file you wish to analyize'); % only looks for .txt files
 % Get a list of all files in the folder with desired pattern
-filePattern = fullfile(PathName, '**/*.txt') ;
-Files = dir(filePattern) ;
-Files = {Files.name}' ;
+filePattern = fullfile(PathName, '**/*.txt');
+Files = dir(filePattern);
+Files = {Files.name}';
 
 %% File splitting
-fn=regexp(Files,'\w*(?=.txt)','match') ;
-fname = [fn{:,:}]' ;
+fn=regexp(Files,'\w*(?=.txt)','match');
+fname = [fn{:,:}]';
 
-cng = regexp(fname,'_','split') ;
-change = [cng{:,:}]' ;
-num_subs_times_parameters = length(change) ;
-change = reshape(change,[num_subs_times_parameters./length(Files),length(Files)]) ;
+cng = regexp(fname,'_','split');
+change = [cng{:,:}]';
+num_subs_times_parameters = length(change);
+change = reshape(change,[num_subs_times_parameters./length(Files),length(Files)]);
 
 %% Assigns Information based on regular trial or iterative change
-[m,~] = size(change) ;
+[m,~] = size(change);
 if m == 4
-    subject = change(1,:) ;
+    subject = change(1,:);
     joint = change(3,: );
-    direc = change(4,:) ;
+    direc = change(4,:);
 else
     iteration = change(1,:);
-    subject = change(2,:) ;
+    subject = change(2,:);
     joint = change(4,: );
-    direc = change(5,:) ;
+    direc = change(5,:);
 end
 
 for n=1:length(Files)
-    trial{1,n} = [joint{1,n},'_',direc{1,n}] ;
+    trial{1,n} = [joint{1,n},'_',direc{1,n}];
 end
 
 %% Get the data from the files
+Loc = 1;
 for nfiles =1:length(Files)
-    csub = (subject{1,nfiles}) ;
-    cjoint = (joint{1,nfiles}) ;
-    cdirection = (direc{1,nfiles}) ;
+    csub = (subject{1,nfiles});
+    cjoint = (joint{1,nfiles});
+    cdirection = (direc{1,nfiles});
+    sNum = str2num(csub(end-1:end));
+
+%     % Find Range of Cells
+%     if strcmpi(cjoint,'hip') ~= 1
+%         A = ['A',num2str(Loc),':','A',num2str(Loc+7)];
+%         B = ['B',num2str(Loc),':','B',num2str(Loc+7)];
+%         C = ['C',num2str(Loc),':','C',num2str(Loc+7)];
+%         Loc = Loc + 8;
+%         sz = 8;
+%     else
+%         A = ['A',num2str(Loc),':','A',num2str(Loc+11)];
+%         B = ['B',num2str(Loc),':','B',num2str(Loc+11)];
+%         C = ['C',num2str(Loc),':','C',num2str(Loc+11)];
+%         Loc = Loc + 12;
+%         sz = 12;
+%     end
+% 
+%     % Cells of Names
+%     csubM = cell(sz,1);     cjntM = cell(sz,1);     cdirM = cell(sz,1);
+%     for l = 1:sz
+%         csubM{l} = csub;    cjntM{l} = cjoint;      cdirM{l} = cdirection;
+%     end
+% 
+%     % Write to Excel File
+%     writecell(csubM, 'subData.xls','Sheet',sNum,'Range',A);
+%     writecell(cjntM, 'subData.xls','Sheet',sNum,'Range',B);
+%     writecell(cdirM, 'subData.xls','Sheet',sNum,'Range',C);
+%     writematrix('End', 'subData.xls','Sheet',sNum,'Range','F56');
+
     [deMVC.(subject{1,nfiles}).(trial{1,nfiles}).rmvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).pmvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc,...
-        metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata]= importBiodex([PathName,'\',Files{nfiles,1}]) ;
-    
+        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).mmvc,...
+        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).smvc,...
+        metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata]= importBiodex([PathName,'\',Files{nfiles,1}]);
+
+    % Vars Clearing
+    clear A B C cdirM cjntM csubM D sNum sz
+
     %% Checks each trial against metadata to make sure there are no errors in naming
-    csub = convertCharsToStrings(csub) ;
-    cjoint = convertCharsToStrings(cjoint) ;
-    cdirection = convertCharsToStrings(cdirection) ;
-    
-    j = metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.subject ;
-    k =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.joint ;
-    l =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.match ;
-    
+    csub = convertCharsToStrings(csub);
+    cjoint = convertCharsToStrings(cjoint);
+    cdirection = convertCharsToStrings(cdirection);
+
+    j = metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.subject;
+    k =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.joint;
+    l =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.match;
+
     if strcmpi(csub,j) ~= 1
         fprintf('Expected: %s_%s_%s\n', csub, cjoint, cdirection)
         fprintf('The metadata subject code %s does not match for %s_%s_%s.\n', j, csub, cjoint, cdirection)
         fprintf('The file is located in %s\n', PathName)
         if m ~=4
-            citer = (iteration{1,nfiles}) ;
-            citer = convertCharsToStrings(citer) ;
+            citer = (iteration{1,nfiles});
+            citer = convertCharsToStrings(citer);
             fprintf('Using iteration code %s\n', citer)
         end
         break
     end
-    
+
     if strcmpi(cjoint,k) ~= 1
         fprintf('The metadata subject joint %s does not match for %s_%s_%s.\n', k, csub, cjoint, cdirection)
         fprintf('The file is located in %s\n', PathName)
         if m ~=4
-            citer = (iteration{1,nfiles}) ;
-            citer = convertCharsToStrings(citer) ;
+            citer = (iteration{1,nfiles});
+            citer = convertCharsToStrings(citer);
             fprintf('Using iteration code %s\n', citer)
         end
         break
     end
-    
+
     if strcmpi(cdirection,l) ~= 1
         fprintf('The metadata subject direction %s does not match for %s_%s_%s.\n', l, csub, cjoint, cdirection)
         fprintf('The file is located in %s\n', PathName)
         if m ~=4
-            citer = (iteration{1,nfiles}) ;
-            citer = convertCharsToStrings(citer) ;
+            citer = (iteration{1,nfiles});
+            citer = convertCharsToStrings(citer);
             fprintf('Using iteration code %s\n', citer)
         end
         break
@@ -92,18 +127,18 @@ for nfiles =1:length(Files)
 end
 
 %% Var clearing
-clear cdirection cjoint ctrial j k l nfiles
+clear cdirection cjoint ctrial j k l nfiles Loc
 clear num_sub_times_parameters subject testingparameter trial
 clear direc Files joint num_subs_times_parameters s filePattern
 
 
 %% Save check
 fprintf('Would you like to save this data?\n')
-promt = input('Save -> [Y|N]\n','s') ;
-exp = promt ;
+promt = input('Save -> [Y|N]\n','s');
+exp = promt;
 if strcmpi(exp,'y')
     %% Folder Check/Creation
-    dataFolder = uigetdir('D:\', 'Select Location you would like to save this data') ;
+    dataFolder = uigetdir('D:\', 'Select Location you would like to save this data');
     location = fullfile(dataFolder, 'Biodex_Processed_Data');
 
     if ~exist(location, 'dir')

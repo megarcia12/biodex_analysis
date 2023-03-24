@@ -48,9 +48,7 @@ F03hipFEAng = [0 15 30];
 figure(1)
 subplot(2,2,1)
 plot(F03ankleAng, F03ankle, ':o' ,'LineWidth', 2.5)
-title('Ankle')
-ylabel('Joint Moment (N-m)')
-xlabel('Angle (Degrees)')
+c
 legend('Dorsiflexion','Plantarflexion','location', 'eastoutside')
 
 subplot(2,2,2)
