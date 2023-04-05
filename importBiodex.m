@@ -1,4 +1,4 @@
-function [data,cmax,tmax,mmax,smax,metadata] = importBiodex(filename, dataLines)
+function [data,fdata,cmax,tmax,mmax,smax,metadata] = importBiodex(filename, dataLines)
 %IMPORTFILE Import data from a text file
 %  [SET, REP, MSEC, TORQUE, POSITION, POS_ANAT, VELOCITY] =
 %  IMPORTFILE(FILENAME) reads data from text file FILENAME for the
@@ -83,36 +83,42 @@ if length(angles) == 4
     for na = 1:length(angles)
         ind.(['a',num2str(angles(1,na))]) = (tbl.Set==na) ;
         cangle = (['a',num2str(angles(1,na))]) ; % Sets current angle
-
         for nReps = 1:2
             crep = ['rep',num2str(nReps)] ; % Sets current rep
             itrial = (ind.(cangle)) & (ind.(crep)) ; % Creates the trial to be used
             data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)] ; % Saves data for time and torque
-            if sum(data.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
-                [cmax.(cangle).(crep),s] = max(data.(cangle).(crep)(:,2)) ;
-                [c,~] = size(data.(cangle).(crep)(:,2));
+            % Data Filter
+            w_coff1 =20 ; w_samp = 100 ;
+            [b1,a1] = butter(2,(w_coff1/(w_samp/2)),'low') ;
+            fdata.(cangle).(crep)(:,2) = filtfilt(b1,a1,data.(cangle).(crep)(:,2));
+            fdata.(cangle).(crep)(:,1) = data.(cangle).(crep)(:,1);
+            if sum(fdata.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
+                % Max Calculations
+                [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2)) ;
+                [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(1:100,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(s-49:s+50,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(end-100:end,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(s:s+99,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
-            elseif sum(data.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
-                [cmax.(cangle).(crep),s] = max(-data.(cangle).(crep)(:,2)) ;
-                [c,~] = size(data.(cangle).(crep)(:,2));
+            elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
+                % Max Calculations
+                [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2)) ;
+                [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(1:100,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(s-49:s+50,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(end-100:end,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(s:s+99,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
             else % Takes care of any empty fields (lost data, excluded data, ect)
                 cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
@@ -121,20 +127,6 @@ if length(angles) == 4
         end
 
         tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2; % Manual calculation of the max for each angle
-
-        %         % Excel Portion
-        %         T = readtable('subData.xls','Sheet',sNum);
-        %         DIndex = find(isnan(T{:,4}));
-        %         D1 = ['D',num2str(DIndex(1))];
-        %         D2 = ['D',num2str(DIndex(2))];
-        %         writematrix(str2num(cangle(2:end)), 'subData.xls','Sheet',sNum,'Range',D1);
-        %         writematrix(str2num(cangle(2:end)), 'subData.xls','Sheet',sNum,'Range',D2);
-        %         EIndex = find(isnan(T{:,5}));
-        %         E1 = ['E',num2str(EIndex(1))];
-        %         E2 = ['E',num2str(EIndex(2))];
-        %         writematrix(cmax.(cangle).rep1, 'subData.xls','Sheet',sNum,'Range',E1);
-        %         writematrix(cmax.(cangle).rep2, 'subData.xls','Sheet',sNum,'Range',E2);
-
     end
 else
     for na = 1:2:length(angles)
@@ -143,44 +135,41 @@ else
         crep = ['rep',num2str(1)] ; % Sets current rep
         itrial = (ind.(cangle)); % Creates the trial to be used
         data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)] ; % Saves data for time and torque
-        if sum(data.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
-            [cmax.(cangle).(crep),s] = max(data.(cangle).(crep)(:,2)) ;
-            [c,~] = size(data.(cangle).(crep)(:,2));
+        % Data Filter
+        w_coff1 =20 ; w_samp = 100 ;
+        [b1,a1] = butter(2,(w_coff1/(w_samp/2)),'low') ;
+        fdata.(cangle).(crep)(:,2) = filtfilt(b1,a1,data.(cangle).(crep)(:,2));
+        fdata.(cangle).(crep)(:,1) = data.(cangle).(crep)(:,1);
+        if sum(fdata.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
+            % Max Calculations
+            [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2)) ;
+            [c,~] = size(fdata.(cangle).(crep)(:,2));
             if s < 50
-                mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(1:100,2));
+                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
             else
-                mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(s-49:s+50,2));
+                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
             end
             if s > c-100
-                smax.(cangle).(crep) = mean(-data.(cangle).(crep)(end-100:end,2));
+                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
             else
-                smax.(cangle).(crep) = mean(-data.(cangle).(crep)(s:s+99,2));
+                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
             end
-        elseif sum(data.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
-            [cmax.(cangle).(crep),s] = max(-data.(cangle).(crep)(:,2)) ;
-            [c,~] = size(data.(cangle).(crep)(:,2));
+        elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
+            % Max Calculations
+            [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2)) ;
+            [c,~] = size(fdata.(cangle).(crep)(:,2));
             if s < 50
-                mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(1:100,2));
+                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
             else
-                mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(s-49:s+50,2));
+                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
             end
             if s > c-100
-                smax.(cangle).(crep) = mean(-data.(cangle).(crep)(end-100:end,2));
+                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
             else
-                smax.(cangle).(crep) = mean(-data.(cangle).(crep)(s:s+99,2));
+                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
             end
         else % Takes care of any empty fields (lost data, excluded data, ect)
             cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
-
-            %             % Excel Portion
-            %             T = readtable('subData.xls','Sheet',sNum);
-            %             DIndex = find(isnan(T{:,4}));
-            %             D1 = ['D',num2str(DIndex(1))];
-            %             writematrix(str2num(cangle(2:end)), 'subData.xls','Sheet',sNum,'Range',D1);
-            %             EIndex = find(isnan(T{:,5}));
-            %             E1 = ['E',num2str(EIndex(1))];
-            %             writematrix(cmax.(cangle).rep1, 'subData.xls','Sheet',sNum,'Range',E1);
-
         end
         for na = 2:2:length(angles)
             ind.(['a',num2str(angles(1,na))]) = (tbl.Set==na) ;
@@ -188,45 +177,42 @@ else
             crep = ['rep',num2str(2)] ; % Sets current rep
             itrial = (ind.(cangle)); % Creates the trial to be used
             data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)] ; % Saves data for time and torque
-            if sum(data.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
-                [cmax.(cangle).(crep),s] = max(data.(cangle).(crep)(:,2)) ;
-                [c,~] = size(data.(cangle).(crep)(:,2));
+            % Data Filter
+            w_coff1 =20 ; w_samp = 100 ;
+            [b1,a1] = butter(2,(w_coff1/(w_samp/2)),'low') ;
+            fdata.(cangle).(crep)(:,2) = filtfilt(b1,a1,data.(cangle).(crep)(:,2));
+            fdata.(cangle).(crep)(:,1) = data.(cangle).(crep)(:,1);
+            if sum(fdata.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
+                % Max Calculations
+                [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2)) ;
+                [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(1:100,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(s-49:s+50,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(end-100:end,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(s:s+99,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
-            elseif sum(data.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
-                [cmax.(cangle).(crep),s] = max(-data.(cangle).(crep)(:,2)) ;
-                [c,~] = size(data.(cangle).(crep)(:,2));
+            elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
+                % Max Calculations
+                [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2)) ;
+                [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(1:100,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-data.(cangle).(crep)(s-49:s+50,2));
+                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(end-100:end,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-data.(cangle).(crep)(s:s+99,2));
+                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
             else % Takes care of any empty fields (lost data, excluded data, ect)
                 cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
             end
-
-            %             % Excel Portion
-            %             T = readtable('subData.xls','Sheet',sNum);
-            %             DIndex = find(isnan(T{:,4}));
-            %             D2 = ['D',num2str(DIndex(2))];
-            %             writematrix(str2num(cangle(2:end)), 'subData.xls','Sheet',sNum,'Range',D2);
-            %             EIndex = find(isnan(T{:,5}));
-            %             E2 = ['E',num2str(EIndex(2))];
-            %             writematrix(cmax.(cangle).rep2, 'subData.xls','Sheet',sNum,'Range',E2);
-
         end
 
     end

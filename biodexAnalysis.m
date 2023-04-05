@@ -45,34 +45,8 @@ for nfiles =1:length(Files)
     cdirection = (direc{1,nfiles});
     sNum = str2num(csub(end-1:end));
 
-%     % Find Range of Cells
-%     if strcmpi(cjoint,'hip') ~= 1
-%         A = ['A',num2str(Loc),':','A',num2str(Loc+7)];
-%         B = ['B',num2str(Loc),':','B',num2str(Loc+7)];
-%         C = ['C',num2str(Loc),':','C',num2str(Loc+7)];
-%         Loc = Loc + 8;
-%         sz = 8;
-%     else
-%         A = ['A',num2str(Loc),':','A',num2str(Loc+11)];
-%         B = ['B',num2str(Loc),':','B',num2str(Loc+11)];
-%         C = ['C',num2str(Loc),':','C',num2str(Loc+11)];
-%         Loc = Loc + 12;
-%         sz = 12;
-%     end
-% 
-%     % Cells of Names
-%     csubM = cell(sz,1);     cjntM = cell(sz,1);     cdirM = cell(sz,1);
-%     for l = 1:sz
-%         csubM{l} = csub;    cjntM{l} = cjoint;      cdirM{l} = cdirection;
-%     end
-% 
-%     % Write to Excel File
-%     writecell(csubM, 'subData.xls','Sheet',sNum,'Range',A);
-%     writecell(cjntM, 'subData.xls','Sheet',sNum,'Range',B);
-%     writecell(cdirM, 'subData.xls','Sheet',sNum,'Range',C);
-%     writematrix('End', 'subData.xls','Sheet',sNum,'Range','F56');
-
     [deMVC.(subject{1,nfiles}).(trial{1,nfiles}).rmvc,...
+        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).fmvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).pmvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).mmvc,...

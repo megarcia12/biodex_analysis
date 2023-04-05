@@ -10,11 +10,12 @@ pathName = uigetdir('.mat') ; % Select folder containing data
 filePattern = fullfile(pathName,'*.mat') ;
 matFiles = dir(filePattern) ; % Finds mat files that will be imported
 for i = 1:length(matFiles) % Determines how many files will be imported
-    baseFileName = matFiles(i).name ; 
+    baseFileName = matFiles(i).name ;
     fullFileName = fullfile(pathName, baseFileName) ;
     matdata = load(fullFileName) ;
     tempName = matdata.csub ;
-    assignin('base', tempName, matdata.deMVC)
+    bd.(tempName) = matdata.deMVC ;
     clear matdata
 end
 clear baseFileName filePattern fullFileName i matFiles pathName tempName
+
