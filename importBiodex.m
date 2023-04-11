@@ -1,4 +1,4 @@
-function [data,fdata,cmax,tmax,mmax,smax,metadata] = importBiodex(filename, dataLines)
+function [data,fdata,pmax,tmax,mmax,smax,metadata] = importBiodex(filename, dataLines)
 %IMPORTFILE Import data from a text file
 %  [SET, REP, MSEC, TORQUE, POSITION, POS_ANAT, VELOCITY] =
 %  IMPORTFILE(FILENAME) reads data from text file FILENAME for the
@@ -97,36 +97,43 @@ if length(angles) == 4
                 [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2)) ;
                 [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
             elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
                 % Max Calculations
                 [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2)) ;
                 [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
             else % Takes care of any empty fields (lost data, excluded data, ect)
                 cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
 
             end
         end
-
+        pmax.(cangle) = max(abs(cmax.(cangle).rep1),abs(cmax.(cangle).rep2));
         tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2; % Manual calculation of the max for each angle
+        if pmax.(cangle) == cmax.(cangle).rep1
+            mmax.(cangle) = mdmax.(cangle).rep1;
+            smax.(cangle) = swmax.(cangle).rep1;
+        else
+            mmax.(cangle) = mdmax.(cangle).rep2;
+            smax.(cangle) = swmax.(cangle).rep2;
+        end
     end
 else
     for na = 1:2:length(angles)
@@ -145,28 +152,28 @@ else
             [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2)) ;
             [c,~] = size(fdata.(cangle).(crep)(:,2));
             if s < 50
-                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
+                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
             else
-                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
+                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
             end
             if s > c-100
-                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
+                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
             else
-                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
+                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
             end
         elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
             % Max Calculations
             [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2)) ;
             [c,~] = size(fdata.(cangle).(crep)(:,2));
             if s < 50
-                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
+                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
             else
-                mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
+                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
             end
             if s > c-100
-                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
+                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
             else
-                smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
+                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
             end
         else % Takes care of any empty fields (lost data, excluded data, ect)
             cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
@@ -187,28 +194,28 @@ else
                 [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2)) ;
                 [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
             elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
                 % Max Calculations
                 [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2)) ;
                 [c,~] = size(fdata.(cangle).(crep)(:,2));
                 if s < 50
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
                 else
-                    mmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
+                    mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
                 end
                 if s > c-100
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
                 else
-                    smax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
+                    swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
                 end
             else % Takes care of any empty fields (lost data, excluded data, ect)
                 cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
@@ -218,7 +225,15 @@ else
     end
     for na = 1:length(angles)
         cangle = (['a',num2str(angles(1,na))]) ; % Sets current angle
+        pmax.(cangle) = max(abs(cmax.(cangle).rep1),abs(cmax.(cangle).rep2));
         tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2; % Manual calculation of the max for each angle
+        if pmax.(cangle) == cmax.(cangle).rep1
+            mmax.(cangle) = mdmax.(cangle).rep1;
+            smax.(cangle) = swmax.(cangle).rep1;
+        else
+            mmax.(cangle) = mdmax.(cangle).rep2;
+            smax.(cangle) = swmax.(cangle).rep2;
+        end
     end
 end
 
