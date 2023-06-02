@@ -51,7 +51,16 @@ for nfiles =1:length(Files)
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).mmvc,...
         deMVC.(subject{1,nfiles}).(trial{1,nfiles}).smvc,...
+        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).cmvc,...
         metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata]= importBiodex([PathName,'\',Files{nfiles,1}]);
+    
+    rMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).rmvc; % raw
+    fMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).fmvc; % filterd
+    mMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).pmvc; % max of each rep
+    pMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).cmvc; % max
+    aMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc; % average
+    amMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).mmvc; % midpoint avg
+    afMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).smvc; % forward average
 
     % Vars Clearing
     clear A B C cdirM cjntM csubM D sNum sz
@@ -112,18 +121,66 @@ promt = input('Save -> [Y|N]\n','s');
 exp = promt;
 if strcmpi(exp,'y')
     %% Folder Check/Creation
+    csub = sprintf(csub);
     dataFolder = uigetdir('D:\', 'Select Location you would like to save this data');
     location = fullfile(dataFolder, 'Biodex_Processed_Data');
 
     if ~exist(location, 'dir')
         mkdir(dataFolder,'Biodex_Processed_Data')
     end
+    rMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'rMVC');
+    fMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'fMVC');
+    mMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'mMVC');
+    pMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'pMVC');
+    aMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'aMVC');
+    amMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'amMVC');
+    afMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'afMVC');
+
+    if ~exist(rMVC_folder, 'dir')
+        mkdir(rMVC_folder);
+    end
+    if ~exist(fMVC_folder, 'dir')
+        mkdir(fMVC_folder);
+    end
+    if ~exist(mMVC_folder, 'dir')
+        mkdir(mMVC_folder);
+    end
+    if ~exist(pMVC_folder, 'dir')
+        mkdir(pMVC_folder);
+    end
+    if ~exist(aMVC_folder, 'dir')
+        mkdir(aMVC_folder);
+    end
+    if ~exist(amMVC_folder, 'dir')
+        mkdir(amMVC_folder);
+    end
+    if ~exist(afMVC_folder, 'dir')
+        mkdir(afMVC_folder);
+    end
+
+
+    %% save structs
+    rMVC_file = fullfile(rMVC_folder, csub);
+    fMVC_file = fullfile(fMVC_folder, csub);
+    mMVC_file = fullfile(mMVC_folder, csub);
+    pMVC_file = fullfile(pMVC_folder, csub);
+    aMVC_file = fullfile(aMVC_folder, csub);
+    amMVC_file = fullfile(amMVC_folder, csub);
+    afMVC_file = fullfile(afMVC_folder, csub);
+    %% save structs
+    save(rMVC_file, 'rMVC');
+    save(fMVC_file, 'fMVC');
+    save(mMVC_file, 'mMVC');
+    save(pMVC_file, 'pMVC');
+    save(aMVC_file, 'aMVC');
+    save(amMVC_file, 'amMVC');
+    save(afMVC_file, 'afMVC');
     %% Var clearing
     clear n change fn fname cng m iteration exp promt
     clear PathName dataFolder
-    csub = sprintf(csub);
-    deMVC.dateModified = datetime;
-    save(fullfile(location, csub))
+    %csub = sprintf(csub);
+    %deMVC.dateModified = datetime;
+    %save(fullfile(location, csub))
     %% Var clearing
     clear location csub
 else
