@@ -6,7 +6,8 @@
 close all; clear; clc;
 
 %% Loading Data
-pathName = 'C:\Users\nfq3bd\Desktop\Research\Sex Scaling\Data\Biodex\Biodex_Processed_Data'; % Select folder containing data
+%pathName = 'C:\Users\nfq3bd\Desktop\Research\Sex Scaling\Data\Biodex\Biodex_Processed_Data'; % Select folder containing data
+pathName = 'C:\Users\quent\Biodex\Raw';
 filePattern = fullfile(pathName,'*.mat') ;
 matFiles = dir(filePattern) ; % Finds mat files that will be imported
 for i = 1:length(matFiles) % Determines how many files will be imported
