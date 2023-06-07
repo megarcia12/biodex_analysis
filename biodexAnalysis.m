@@ -38,8 +38,7 @@ for n=1:length(Files)
 end
 
 %% Get the data from the files
-Loc = 1;
-for nfiles =1:length(Files)
+for nfiles = 1:length(Files)
     csub = (subject{1,nfiles});
     cjoint = (joint{1,nfiles});
     cdirection = (direc{1,nfiles});
@@ -61,9 +60,6 @@ for nfiles =1:length(Files)
     aMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc; % average
     amMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).mmvc; % midpoint avg
     afMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).smvc; % forward average
-
-    % Vars Clearing
-    clear A B C cdirM cjntM csubM D sNum sz
 
     %% Checks each trial against metadata to make sure there are no errors in naming
     csub = convertCharsToStrings(csub);
