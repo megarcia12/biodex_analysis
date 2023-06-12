@@ -85,7 +85,7 @@ if length(angles) == 4
         cangle = (['a',num2str(angles(1,na))]); % Sets current angle
         for nReps = 1:2
             crep = ['rep',num2str(nReps)]; % Sets current rep
-            itrial = (ind.(cangle)) & (ind.(crep)); % Creates the trial to be used by looking for the 
+            itrial = (ind.(cangle)) & (ind.(crep)); % Creates the trial to be used by looking for the
             data.(cangle).(crep) = [tbl.mSec(itrial),tbl.TORQUE(itrial)]; % Saves data for time and torque
             % Data Filter
             w_coff1 =20; w_samp = 100;
@@ -122,7 +122,6 @@ if length(angles) == 4
                 end
             else % Takes care of any empty fields (lost data, excluded data, ect)
                 cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
-
             end
         end
         pmax.(cangle)(1,1) = max(abs(cmax.(cangle).rep1),abs(cmax.(cangle).rep2));
@@ -141,7 +140,6 @@ else
     % Thresholds based off of previous traces with different true and false spikes
     peakDropMax = 50; % difference between peak and min in the next half of a second
     secondPeak = 20; % difference between the min and the data value at 1.5 seconds into the trial
-
     for na = 1:2:length(angles)
         ind.(['a',num2str(angles(1,na))]) = (tbl.Set==na);
         cangle = (['a',num2str(angles(1,na))]); % Sets current angle
@@ -164,56 +162,7 @@ else
                 if (cmax.(cangle).(crep) - cmin) > peakDropMax && (normal_avg - cmin) > secondPeak % threshold for identifying false peak
                     plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2)); % plots if there is false peak
                     % data from metadata to get joint and direction
-                    info = trialDataImport(filename); 
-                    joint = string(info(19)) ; % Joint
-                    dof = string(info(20)) ; % Biodex designation
-                    bdirection  = string(info(22) ); % Direction of movement
-                    if contains(joint,'Hip')==1
-                        if contains(dof, 'Extension') && contains(bdirection, 'TOWARDS')
-                            match = 'ex' ; % Assigns extension based on biodex direction
-                        elseif contains(dof, 'Extension') && contains(bdirection, 'AWAY')
-                            match = 'fx' ; % Assigns flexion based on biodex direction
-                        elseif contains(dof, 'Abduction') && contains(bdirection, 'TOWARDS')
-                            match = 'ad' ; % Assigns adduction based on biodex direction
-                        else
-                            match = 'ab' ; % Assigns abduction based on biodex direction
-                        end
-                    end
-                    % user input on if peak should be discarded
-                    %disp(['False peak detected at ', joint, match, num2str(cangle), num2str(crep)]);
-                    fprintf('False peak detected at %s %s %s %s\n', joint, match, num2str(cangle), num2str(crep));
-                    user_input = input("Do you want to discard peak? (y/n)", 's');
-                    if user_input == 'n'
-                        disp("Keeping peak");                           
-                    end
-                    if user_input == 'y' % discard peak and continue on with rest of code
-                        fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial    
-                    end                    
-                end
-            end
-            if s < 50
-                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
-            else
-                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
-            end
-            if s > c-100
-                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
-            else
-                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
-            end
-
-        elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
-            % Max Calculations       
-            [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2));
-            [c,~] = size(fdata.(cangle).(crep)(:,2));
-            % False peak check
-            if s < 50 % if max if in first 1/2 second
-                cmin = min(-fdata.(cangle).(crep)(s:s+50,2)); % find in half second after peak
-                normal_avg = -fdata.(cangle).(crep)(150,2); % take value at 1.5 seconds
-                if (cmax.(cangle).(crep) - cmin) > peakDropMax && (normal_avg - cmin) > secondPeak % threshold for identifying false peak
-                    plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2)); % plots if there is false peak
-                    % data from metadata to get joint and direction
-                    info = trialDataImport(filename); 
+                    info = trialDataImport(filename);
                     joint = string(info(19)) ; % Joint
                     dof = string(info(20)) ; % Biodex designation
                     bdirection  = string(info(22) ); % Direction of movement
@@ -238,10 +187,8 @@ else
                     if user_input == 'y' % discard peak and continue on with rest of code
                         fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
                     end
-             
                 end
             end
-
             if s < 50
                 mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
             else
@@ -252,7 +199,54 @@ else
             else
                 swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
             end
-
+        elseif sum(fdata.(cangle).(crep)(:,2)) < 0 % Checks to see if the data is negative
+            % Max Calculations
+            [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2));
+            [c,~] = size(fdata.(cangle).(crep)(:,2));
+            % False peak check
+            if s < 50 % if max if in first 1/2 second
+                cmin = min(-fdata.(cangle).(crep)(s:s+50,2)); % find in half second after peak
+                normal_avg = -fdata.(cangle).(crep)(150,2); % take value at 1.5 seconds
+                if (cmax.(cangle).(crep) - cmin) > peakDropMax && (normal_avg - cmin) > secondPeak % threshold for identifying false peak
+                    plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2)); % plots if there is false peak
+                    % data from metadata to get joint and direction
+                    info = trialDataImport(filename);
+                    joint = string(info(19)) ; % Joint
+                    dof = string(info(20)) ; % Biodex designation
+                    bdirection  = string(info(22) ); % Direction of movement
+                    if contains(joint,'Hip')==1
+                        if contains(dof, 'Extension') && contains(bdirection, 'TOWARDS')
+                            match = 'ex' ; % Assigns extension based on biodex direction
+                        elseif contains(dof, 'Extension') && contains(bdirection, 'AWAY')
+                            match = 'fx' ; % Assigns flexion based on biodex direction
+                        elseif contains(dof, 'Abduction') && contains(bdirection, 'TOWARDS')
+                            match = 'ad' ; % Assigns adduction based on biodex direction
+                        else
+                            match = 'ab' ; % Assigns abduction based on biodex direction
+                        end
+                    end
+                    % user input on if peak should be discarded
+                    %disp(['False peak detected at ', joint, match, num2str(cangle), num2str(crep)]);
+                    fprintf('False peak detected at %s %s %s %s\n', joint, match, num2str(cangle), num2str(crep));
+                    user_input = input("Do you want to discard peak? (y/n)", 's');
+                    if user_input == 'n'
+                        disp("Keeping peak");
+                    end
+                    if user_input == 'y' % discard peak and continue on with rest of code
+                        fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
+                    end
+                end
+            end
+            if s < 50
+                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
+            else
+                mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s-49:s+50,2));
+            end
+            if s > c-100
+                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(end-100:end,2));
+            else
+                swmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(s:s+99,2));
+            end
         else % Takes care of any empty fields (lost data, excluded data, ect)
             cmax.(cangle).(crep) = 0; % Sets the empty field to 0 to avoid issues for max and average
         end
@@ -269,7 +263,7 @@ else
         fdata.(cangle).(crep)(:,2) = filtfilt(b1,a1,data.(cangle).(crep)(:,2));
         fdata.(cangle).(crep)(:,1) = data.(cangle).(crep)(:,1);
         if sum(fdata.(cangle).(crep)(:,2)) > 0 % Checks to see if the data is positive
-            % Max Calculations        
+            % Max Calculations
             [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2)) ;
             [c,~] = size(fdata.(cangle).(crep)(:,2));
             % False peak check
@@ -279,7 +273,7 @@ else
                 if (cmax.(cangle).(crep) - cmin) > peakDropMax && (normal_avg - cmin) > secondPeak % threshold for identifying false peak
                     plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2)); % plots if there is false peak
                     % data from metadata to get joint and direction
-                    info = trialDataImport(filename); 
+                    info = trialDataImport(filename);
                     joint = string(info(19)) ; % Joint
                     dof = string(info(20)) ; % Biodex designation
                     bdirection  = string(info(22) ); % Direction of movement
@@ -300,15 +294,12 @@ else
                     user_input = input("Do you want to discard peak? (y/n)", 's');
                     if user_input == 'n'
                         disp("Keeping peak");
-                        
                     end
                     if user_input == 'y' % discard peak and continue on with rest of code
                         fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
                     end
-          
                 end
             end
-
             if s < 50
                 mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
             else
@@ -330,7 +321,7 @@ else
                 if (cmax.(cangle).(crep) - cmin) > peakDropMax && (normal_avg - cmin) > secondPeak % threshold for identifying false peak
                     plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2));  % plots if there is false peak
                     % data from metadata to get joint and direction
-                    info = trialDataImport(filename); 
+                    info = trialDataImport(filename);
                     joint = string(info(19)) ; % Joint
                     dof = string(info(20)) ; % Biodex designation
                     bdirection  = string(info(22) ); % Direction of movement
@@ -355,10 +346,9 @@ else
                     if user_input == 'y' % discard peak and continue on with rest of code
                         fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
                     end
-               
+
                 end
             end
-            
             if s < 50
                 mdmax.(cangle).(crep) = mean(-fdata.(cangle).(crep)(1:100,2));
             else
@@ -435,6 +425,19 @@ else
     end
 end
 
+    
+for na = 1:length(angles)
+    cangle = (['a',num2str(angles(1,na))]); % Sets current angle
+    pmax.(cangle) = max(abs(cmax.(cangle).rep1),abs(cmax.(cangle).rep2));
+    tmax.(cangle) = (cmax.(cangle).rep1+cmax.(cangle).rep2)/2; % Manual calculation of the max for each angle
+    if pmax.(cangle) == cmax.(cangle).rep1
+        mmax.(cangle) = mdmax.(cangle).rep1;
+        smax.(cangle) = swmax.(cangle).rep1;
+    else
+        mmax.(cangle) = mdmax.(cangle).rep2;
+        smax.(cangle) = swmax.(cangle).rep2;
+    end
+end
 
 %% Sets up Meta Data Analysis
 info = trialDataImport(filename);
@@ -442,21 +445,18 @@ metadata.subject = string(info(1)); % Subject ID
 metadata.joint = string(info(19)); % Joint
 metadata.dof = string(info(20)); % Biodex designation
 metadata.bdirection  = string(info(22) ); % Direction of movement
-
 if contains(metadata.joint,'Ankle')==1
     if contains(metadata.dof, 'Plantar') && contains(metadata.bdirection, 'TOWARDS')
         metadata.match = 'df'; % Assigns dorsiflexion based on biodex direction
     else
         metadata.match = 'pf'; % Assigns plantar flexion based on biodex direction
     end
-
 elseif contains(metadata.joint,'Knee')==1
     if contains(metadata.dof, 'Extension') && contains(metadata.bdirection, 'TOWARDS')
         metadata.match = 'fx'; % Assigns flexion based on biodex direction
     else
         metadata.match = 'ex'; % Assigns extension based on biodex direction
     end
-
 elseif  contains(metadata.joint,'Hip')==1
     if contains(metadata.dof, 'Extension') && contains(metadata.bdirection, 'TOWARDS')
         metadata.match = 'ex'; % Assigns extension based on biodex direction
@@ -468,5 +468,4 @@ elseif  contains(metadata.joint,'Hip')==1
         metadata.match = 'ab'; % Assigns abduction based on biodex direction
     end
 end
-
 end
