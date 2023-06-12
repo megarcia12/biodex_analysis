@@ -3,14 +3,17 @@
 % Created 9 June 2023
 % Mario Garcia | nfq3bd@virginia.edu
 close all; clear; clc;
+
 %% File Location
-KeyPath = ("C:\Users\quent\Box\03_Data"); % Input path were files are located
+KeyPath = ('C:\Users\nfq3bd\Box\R01 Sex Specific Modeling\03_Data'); % Input path were files are located
 addpath(KeyPath);
 demo = 'subject_anthropometry.xlsx'; % File containing demographic data to be imported
+
 %% File Import
 [~,~,demoRaw] = xlsread(demo);
 sex = string(demoRaw(1,2:end));
 mass = cell2table(demoRaw(4,2:end));
+height = cell2table(demoRaw(5,2:end));
 height = cell2table(demoRaw(5,2:end));
 
 %% Anthro Struct
@@ -23,7 +26,7 @@ for i = 1:numel(subid) % loop through each subject
     %sub = genvarname(val);
 
     % Corresponding value for each category
-    anthro.(sub).General.Sex = val(1);
+    anthro.(sub).General.Sex = sub(1);
     anthro.(sub).General.Age = demoRaw{2,i+1};
     anthro.(sub).General.Mass = demoRaw{4,i+1};
     anthro.(sub).General.Height = demoRaw{5,i+1};
