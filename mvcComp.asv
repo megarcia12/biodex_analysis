@@ -114,10 +114,7 @@ for j = 1:numel(momDir)
 
         %% Data Values
         st.totalMx(k,j) = max(data); st.fMx(k,j) = max(fData); st.mMx(k,j) = max(mData);
-        st.totalMn(k,j) = mean(data); st.fMn(k,j) = mean(fData); st.mMn(k,j) = mean(mData);
-        st.totalStd(k,j) = std(data); st.fStd(k,j) = std(fData); st.mStd(k,j) = std(mData);
-        st.totalR(k,j) = max(data)-min(data); st.fR(k,j) = max(fData)-min(fData); st.mR(k,j) = max(mData)-min(mData);
-        st.key(k,j) = string(angles{k});
+        st.totalMn(k,j) = mean(data); st.fMn(k,j) = mean(fData); st.mMx(k,j) = max(mData);
+
     end
-    st.key(5,j) = (momDir{j});
 end
