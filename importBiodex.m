@@ -181,14 +181,18 @@ else
                     %disp(['False peak detected at ', joint, match, num2str(cangle), num2str(crep)]);
                     fprintf('False peak detected at %s %s %s %s\n', joint, match, num2str(cangle), num2str(crep));
                     user_input = input("Do you want to discard peak? (y/n)", 's');
-                    if user_input == 'n'
-                        disp("Keeping peak");
-                    end
-                    if user_input == 'y' % discard peak and continue on with rest of code
+                    if strcmpi(user_input,'y')% discard peak and continue on with rest of code
                         fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
+                        hold on
+                        plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2),'r');
+                        legend('False Peak','Saved Data','Location','southeast')
+                        pause(5)
+                        close all
                         % Max Calculations
-                        [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2));
+                        [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2));
                         [c,~] = size(fdata.(cangle).(crep)(:,2));
+                    else
+                        disp("Keeping peak");
                     end
                 end
             end
@@ -232,14 +236,18 @@ else
                     %disp(['False peak detected at ', joint, match, num2str(cangle), num2str(crep)]);
                     fprintf('False peak detected at %s %s %s %s\n', joint, match, num2str(cangle), num2str(crep));
                     user_input = input("Do you want to discard peak? (y/n)", 's');
-                    if user_input == 'n'
-                        disp("Keeping peak");
-                    end
-                    if user_input == 'y' % discard peak and continue on with rest of code
+                    if strcmpi(user_input,'y')% discard peak and continue on with rest of code
                         fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
-                         % Max Calculations
+                        hold on
+                        plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2),'r');
+                        legend('False Peak','Saved Data','Location','southeast')
+                        pause(5)
+                        close all
+                        % Max Calculations
                         [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2));
                         [c,~] = size(fdata.(cangle).(crep)(:,2));
+                    else
+                        disp("Keeping peak");
                     end
                 end
             end
@@ -298,14 +306,18 @@ else
                     %disp(['False peak detected at ', joint, match, num2str(cangle), num2str(crep)]);
                     fprintf('False peak detected at %s %s %s %s\n', joint, match, num2str(cangle), num2str(crep));
                     user_input = input("Do you want to discard peak? (y/n)", 's');
-                    if user_input == 'n'
-                        disp("Keeping peak");
-                    end
-                    if user_input == 'y' % discard peak and continue on with rest of code
+                    if strcmpi(user_input,'y')% discard peak and continue on with rest of code
                         fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
-                         % Max Calculations
-                        [cmax.(cangle).(crep),s] = max(fdata.(cangle).(crep)(:,2));
+                        hold on
+                        plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2),'r');
+                        legend('False Peak','Saved Data','Location','southeast')
+                        pause(5)
+                        close all
+                        % Max Calculations
+                        [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2));
                         [c,~] = size(fdata.(cangle).(crep)(:,2));
+                    else
+                        disp("Keeping peak");
                     end
                 end
             end
@@ -349,16 +361,19 @@ else
                     %disp(['False peak detected at ', joint, match, num2str(cangle), num2str(crep)]);
                     fprintf('False peak detected at %s %s %s %s\n', joint, match, num2str(cangle), num2str(crep));
                     user_input = input("Do you want to discard peak? (y/n)", 's');
-                    if user_input == 'n'
-                        disp("Keeping peak");
-                    end
-                    if user_input == 'y' % discard peak and continue on with rest of code
+                    if strcmpi(user_input,'y')% discard peak and continue on with rest of code
                         fdata.(cangle).(crep) = fdata.(cangle).(crep)(51:end,:); % delete first half second of trial
-                         % Max Calculations
+                        hold on
+                        plot((fdata.(cangle).(crep)(:,1)),fdata.(cangle).(crep)(:,2),'r');
+                        legend('False Peak','Saved Data','Location','southeast')
+                        pause(5)
+                        close all
+                        % Max Calculations
                         [cmax.(cangle).(crep),s] = max(-fdata.(cangle).(crep)(:,2));
                         [c,~] = size(fdata.(cangle).(crep)(:,2));
+                    else
+                        disp("Keeping peak");
                     end
-
                 end
             end
             if s < 50
@@ -393,7 +408,7 @@ else
     end
 end
 
-   
+
 %% Sets up Meta Data Analysis
 info = trialDataImport(filename);
 metadata.subject = string(info(1)); % Subject ID

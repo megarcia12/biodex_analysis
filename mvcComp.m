@@ -2,128 +2,110 @@
 % mvcComp.m
 % Created 12 June 2023
 % Mario Garcia | nfq3bd@virginia.edu
-close all; clear; clc; warning off
 
 %% File Location
+KeyPath=('C:\Users\nfq3bd\Desktop\Research\Sex Scaling\Collected Data\Biodex\biodex_analysis'); % Input path were files are located
+addpath(KeyPath); run('demographic.m');
+anthro = rmfield(anthro, ["M06", "F05", "F07"]); % Subjects who do not have full data sets and need to be removed
+anthro = rmfield(anthro,["F21", "F26", "M02", "M03"]); % Removes subjects who do not have volume data
 pathName = 'C:\Users\nfq3bd\Desktop\Research\Sex Scaling\Collected Data\Biodex\Biodex_Processed_Data\mMVC';
 filePattern = fullfile(pathName, '*.mat');
 matFiles = dir(filePattern); % Finds mat files that will be imported
 bd = struct(); % Initialize the main structure
-KeyPath = ('C:\Users\nfq3bd\Desktop\Research\Sex Scaling\Collected Data\Biodex\Graph Functions'); % Input path were files are located
-addpath(KeyPath);
 for i = 1:length(matFiles) % Determines how many files will be imported
-    matdata = load(fullfile(pathName, matFiles(i).name));
-    tempName = matdata.mMVC;
-    x = fieldnames(tempName);
-    bd.(x{1}) = tempName;
+    matdata = load(fullfile(pathName, matFiles(i).name)); % Loads mat files and saves them using sID
+    tempName = matdata.mMVC; % Creates a temp name for saving
+    x = fieldnames(tempName); % Finds the inner structure to reduce redundancy in naming
+    bd.(x{1}) = tempName; % Creates structure
 end
-subID = fieldnames(bd);
-momDir = fieldnames(bd.(subID{1}).(subID{1}));
+
+bd = rmfield(bd,["M06", "F05", "F07", "M13"]); % Removes subjects who do not have full data sets or do not fit within our inclusion criteria 
+bd = rmfield(bd,["F21", "F26", "M02", "M03", "F14"]); % Removes subjects who do not have volume data
+subID = fieldnames(bd); % Creates subject IDs to iterate over
+momDir = fieldnames(bd.(subID{1}).(subID{1})); % Determines moment directions
 joint = struct(); % Initialize the joint structure
+
 for j = 1:numel(momDir)
-    ang = fieldnames(bd.(subID{1}).(subID{1}).(momDir{j}));
+    ang = fieldnames(bd.(subID{1}).(subID{1}).(momDir{j})); % Determines the angles for the moment directions
     for l = 1:numel(ang)
-        joint.(momDir{j}).(ang{l}) = struct();
+        joint.(momDir{j}).(ang{l}) = struct(); % Creates the joint and moment direction structure
         for i = 1:numel(subID)
-            joint.(momDir{j}).(ang{l}).(subID{i}) = bd.(subID{i}).(subID{i}).(momDir{j}).(ang{l});
+            joint.(momDir{j}).(ang{l}).(subID{i}) = bd.(subID{i}).(subID{i}).(momDir{j}).(ang{l}); % Places subject information into structure
         end
     end
 end
+
 clear filePattern matFiles pathName x ang i j l matdata tempName
-l = 1;
 
 % Iterate over each field in the main structure
+i = 1;
+
 for j = 1:numel(momDir)
     % Get the fieldnames of the sub-structure
-    angles = fieldnames(bd.(subID{1}).(subID{1}).(momDir{j}));
-    angles = sort(angles);
+    angles = fieldnames(bd.(subID{1}).(subID{1}).(momDir{j})); % Determines the angles for the moment directions
+    angles = sort(angles); % Organizes angles into descending order
+
     % Iterate over each field in the sub-structure
     for k = 1:numel(angles)
-        % Iterate over each field in the sub-sub-structure
-        load('C:\Users\nfq3bd\Desktop\Research\Sex Scaling\Collected Data\Biodex\Graph Functions\anthro.mat')
-        anthro = rmfield(anthro,"M03");
-        for z = 1:length(subID)
-            norm(z) = anthro.(subID{z}).General.Mass;
-        end
-        sex = fieldnames(joint.(momDir{j}).(angles{k}));
-        sex = string(sex);
-        m = contains(sex,'M');
-        f = contains(sex,'F');
-        data = table2array(struct2table(joint.(momDir{j}).(angles{k})));
-        data = data./norm;
-        fData = data(f');
-        mData = data(m');
-        numInt = 5;
-        intWidth = (max(data)-min(data))/numInt;
-        x = min(data):intWidth:max(data);
-        ncount = histc(data,x);
-        relFreq = ncount/length(data);
 
-%         %% Data Visualization
-%         h = figure(l); % Creates figure - increases after each loop
-%         h.WindowState = 'maximized'; % Fully opens windown to allow for better visuals when saving
-%         subplot(3,2,1:2)
-%         bar(x-intWidth/2,relFreq)
-%         labels = arrayfun(@(value) num2str(value,'%.3f'),relFreq,'UniformOutput',false);
-%         text(x-intWidth/2,relFreq,labels,...
-%             'HorizontalAlignment','center',...
-%             'VerticalAlignment','bottom')
-%         xlabel('Torque (Nm)')
-%         ylabel('Frequency (%)')
-%         title('Relative Frequency')
-% 
-%         subplot(3,2,3)
-%         distributionPlot(data','widthDiv',[2 1],'histOri','left','color',[27,158,119]/255,'showMM',4)
-%         distributionPlot(gca,fData','widthDiv',[2 2],'histOri','right','color',[217,95,2]/255,'showMM',4)
-%         ylabel('Torque (Nm)')
-%         title('Total-Female Violin')
-% 
-%         subplot(3,2,4)
-%         distributionPlot(data','widthDiv',[2 1],'histOri','left','color',[27,158,119]/255,'showMM',4)
-%         distributionPlot(gca,mData','widthDiv',[2 2],'histOri','right','color',[117,112,179]/255,'showMM',4)
-%         ylabel('Torque (Nm)')
-%         title('Total-Male Violin')
-% 
-%         subplot(3,2,5)
-%         distributionPlot(fData','widthDiv',[2 1],'histOri','left','color',[217,95,2]/255,'showMM',4)
-%         distributionPlot(gca,mData','widthDiv',[2 2],'histOri','right','color',[117,112,179]/255,'showMM',4)
-%         ylabel('Torque (Nm)')
-%         title('Female-Male Violin')
-% 
-%         subplot(3,2,6)
-%         boxchart(data')
-%         hold on
-%         swarmchart(ones(size(fData)),fData,[],[217,95,2]/255)
-%         swarmchart(ones(size(mData)),mData,[],[117,112,179]/255)
-%         hold off
-%         title('Box Plot')
-%         ylabel('Torque (Nm)')
-%         text(2,mean(data(:)),num2str(mean(data(:))),...
-%             'HorizontalAlignment','right',...
-%             'VerticalAlignment','middle',...
-%             'Color',[27,158,119]/255)
-%         yline(mean(data(:)),'Color',[27,158,119]/255)
-%         text(2,mean(mData(:)),num2str(mean(mData(:))),...
-%             'HorizontalAlignment','right',...
-%             'VerticalAlignment','bottom',...
-%             'Color',[117,112,179]/255)
-%         yline(mean(mData(:)),'Color',[117,112,179]/255)
-%         text(2,mean(fData(:)),num2str(mean(fData(:))),...
-%             'HorizontalAlignment','right',...
-%             'VerticalAlignment','top',...
-%             'Color',[217,95,2]/255)
-%         yline(mean(fData(:)),'Color',[217,95,2]/255)
-%         sgtitle([upper(extractBefore(momDir{j},'_')),' ',upper(extractAfter(momDir{j},'_')),' ',upper(angles{k})])
-%         path = 'C:\Users\nfq3bd\Desktop\Research\Sex Scaling\Collected Data\Biodex\Biodex_Processed_Data\Data Plots3';
-%         saveas(h,fullfile(path,sprintf([upper(momDir{j}),'_',upper(angles{k})])),'png');
-%         l = l+1;
+        sex = fieldnames(joint.(momDir{j}).(angles{k})); % Extracts subject IDs
+        sex = string(sex); % Converts the IDs to strings
+        m = contains(sex,'M'); % Determines if the subject is a male based on ID
+        f = contains(sex,'F'); % Determines if the subject is a male based on ID
+
+        % Iterate over each field in the sub-sub-structure
+        for z = 1:length(subID)
+            normM(z) = anthro.(subID{z}).General.Mass; % Determines mass for normalization (kg)
+            normHM(z) = anthro.(subID{z}).General.Mass.*anthro.(subID{z}).General.Height./1000; % Determines height*mass for normalization (m*kg)
+        end
+
+        for z = 1:length(subID)
+            dataR(z) = (joint.(momDir{j}).(angles{k}).(subID{z})(1)); % Variable for raw data
+        end
+
+        %% Data Splitting
+        rfData = dataR(f'); rmData = dataR(m'); % Assigns sex to raw data
 
         %% Data Values
-        st.totalMax(k,j) = max(data); st.fMax(k,j) = max(fData); st.mMax(k,j) = max(mData);
-        st.totalMean(k,j) = mean(data); st.fMean(k,j) = mean(fData); st.mMean(k,j) = mean(mData);
-        st.totalStD(k,j) = std(data); st.fStD(k,j) = std(fData); st.mStD(k,j) = std(mData);
-        st.totalRange(k,j) = max(data)-min(data); st.fRange(k,j) = max(fData)-min(fData); st.mRange(k,j) = max(mData)-min(mData);
+        data.Raw(i,:) = dataR; % Saves all raw data in a structure
+        mNorm = dataR./normM; % Determines mass normalized data
+        data.MNorm(i,:) = mNorm; % Saves all mass normalized data in the structure
+        hmNorm = dataR./normHM; % Determines height-mass normalized data
+        data.HMNorm(i,:) = hmNorm; % Saves all height-mass normalized data in the structures
+
+        %% Single Values
+        % Raw Values
+        st.Raw.totalMax(k,j) = max(dataR); st.Raw.fMax(k,j) = max(rfData); st.Raw.mMax(k,j) = max(rmData);
+        st.Raw.totalMean(k,j) = mean(dataR); st.Raw.fMean(k,j) = mean(rfData); st.Raw.mMean(k,j) = mean(rmData);
+        st.Raw.totalStD(k,j) = std(dataR); st.Raw.fStD(k,j) = std(rfData); st.Raw.mStD(k,j) = std(rmData);
+        st.Raw.totalRange(k,j) = max(dataR)-min(dataR); st.Raw.fRange(k,j) = max(rfData)-min(rfData); st.Raw.mRange(k,j) = max(rmData)-min(rmData);
+
+        % Mass Normalized
+        st.mNorm.totalMax(k,j) = max(mNorm); st.mNorm.fMax(k,j) = max(mNorm(f')); st.mNorm.mMax(k,j) = max(mNorm(m'));
+        st.mNorm.totalMean(k,j) = mean(mNorm); st.mNorm.fMean(k,j) = mean(mNorm(f')); st.mNorm.mMean(k,j) = mean(mNorm(m'));
+        st.mNorm.totalStD(k,j) = std(mNorm); st.mNorm.fStD(k,j) = std(mNorm(f')); st.mNorm.mStD(k,j) = std(mNorm(m'));
+        st.mNorm.totalRange(k,j) = max(mNorm)-min(mNorm); st.mNorm.fRange(k,j) = max(mNorm(f'))-min(mNorm(f')); st.mNorm.mRange(k,j) = max(mNorm(m'))-min(mNorm(m'));
+
+        % Height-Mass Normalized
+        st.hmNorm.totalMax(k,j) = max(hmNorm); st.hmNorm.fMax(k,j) = max(hmNorm(f')); st.hmNorm.mMax(k,j) = max(hmNorm(m'));
+        st.hmNorm.totalMean(k,j) = mean(hmNorm); st.hmNorm.fMean(k,j) = mean(hmNorm(f')); st.hmNorm.mMean(k,j) = mean(hmNorm(m'));
+        st.hmNorm.totalStD(k,j) = std(hmNorm); st.hmNorm.fStD(k,j) = std(hmNorm(f')); st.hmNorm.mStD(k,j) = std(hmNorm(m'));
+        st.hmNorm.totalRange(k,j) = max(hmNorm)-min(hmNorm); st.hmNorm.fRange(k,j) = max(hmNorm(f'))-min(hmNorm(f')); st.hmNorm.mRange(k,j) = max(hmNorm(m'))-min(hmNorm(m'));
+        % Key
         st.key(k,j) = string(angles{k});
+        i = i+1; % Iterates i for loop
+
     end
-    st.key(5,j) = (momDir{j});
+
+    st.key(5,j) = (momDir{j}); % Creates the key for easy data identification
+
 end
+
+clear angles anthro f fData intWidth j joint k KeyPath m mData momDir ncount norm numInt relFreq x z l
+clear cfData cmData dataC R rfData rmData dataR  i normHM normM limbTor hmNorm mNorm subID sex
+
+% %% Removal of torques without current volumes
+% i = find(strcmp(subID,"M13"));
+% data.Raw(:,i)=[]; data.Corrected(:,i)=[]; data.MNorm(:,i)=[]; data.HMNorm(:,i)=[];
+
+clear i 

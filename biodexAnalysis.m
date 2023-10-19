@@ -14,7 +14,6 @@ Files = {Files.name}';
 %% File splitting
 fn=regexp(Files,'\w*(?=.txt)','match');
 fname = [fn{:,:}]';
-
 cng = regexp(fname,'_','split');
 change = [cng{:,:}]';
 num_subs_times_parameters = length(change);
@@ -39,27 +38,23 @@ end
 
 %% Get the data from the files
 for nfiles = 1:length(Files)
-    csub = (subject{1,nfiles});
-    cjoint = (joint{1,nfiles});
-    cdirection = (direc{1,nfiles});
+    csub = subject{nfiles};
+    cjoint = joint{nfiles};
+    cdirection = direc{nfiles};
     sNum = str2num(csub(end-1:end));
 
-    [deMVC.(subject{1,nfiles}).(trial{1,nfiles}).rmvc,...
-        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).fmvc,...
-        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).pmvc,...
-        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc,...
-        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).mmvc,...
-        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).smvc,...
-        deMVC.(subject{1,nfiles}).(trial{1,nfiles}).cmvc,...
-        metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata]= importBiodex([PathName,'\',Files{nfiles,1}]);
-    
-    rMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).rmvc; % raw
-    fMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).fmvc; % filterd
-    mMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).pmvc; % max of each rep
-    pMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).cmvc; % max
-    aMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).amvc; % average
-    amMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).mmvc; % midpoint avg
-    afMVC.(subject{1,nfiles}).(trial{1,nfiles}) = deMVC.(subject{1,nfiles}).(trial{1,nfiles}).smvc; % forward average
+    [deMVC.(csub).(trial{nfiles}).rmvc, deMVC.(csub).(trial{nfiles}).fmvc, ...
+        deMVC.(csub).(trial{nfiles}).pmvc, deMVC.(csub).(trial{nfiles}).amvc, ...
+        deMVC.(csub).(trial{nfiles}).mmvc, deMVC.(csub).(trial{nfiles}).smvc, ...
+        deMVC.(csub).(trial{nfiles}).cmvc, metadata.(csub).(trial{nfiles}).ind_metadata] = importBiodex(fullfile(PathName, Files{nfiles}));
+
+    rMVC.(csub).(trial{nfiles}) = deMVC.(csub).(trial{nfiles}).rmvc; % Raw
+    fMVC.(csub).(trial{nfiles}) = deMVC.(csub).(trial{nfiles}).fmvc; % Filtered
+    mMVC.(csub).(trial{nfiles}) = deMVC.(csub).(trial{nfiles}).pmvc; % Max Torque
+    pMVC.(csub).(trial{nfiles}) = deMVC.(csub).(trial{nfiles}).cmvc; % Max of Each Rep
+    aMVC.(csub).(trial{nfiles}) = deMVC.(csub).(trial{nfiles}).amvc; % Average
+    amMVC.(csub).(trial{nfiles}) = deMVC.(csub).(trial{nfiles}).mmvc; % Midpoint Average
+    afMVC.(csub).(trial{nfiles}) = deMVC.(csub).(trial{nfiles}).smvc; % Forward Average
 
     %% Checks each trial against metadata to make sure there are no errors in naming
     csub = convertCharsToStrings(csub);
@@ -70,38 +65,15 @@ for nfiles = 1:length(Files)
     k =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.joint;
     l =  metadata.(subject{1,nfiles}).(trial{1,nfiles}).ind_metadata.match;
 
-    if strcmpi(csub,j) ~= 1
-        fprintf('Expected: %s_%s_%s\n', csub, cjoint, cdirection)
-        fprintf('The metadata subject code %s does not match for %s_%s_%s.\n', j, csub, cjoint, cdirection)
-        fprintf('The file is located in %s\n', PathName)
-        if m ~=4
-            citer = (iteration{1,nfiles});
-            citer = convertCharsToStrings(citer);
-            fprintf('Using iteration code %s\n', citer)
+    if ~strcmpi(csub, j) || ~strcmpi(cjoint, k) || ~strcmpi(cdirection, l)
+        fprintf('Mismatch in metadata for %s_%s_%s\n', csub, cjoint, cdirection);
+        fprintf('Expected metadata: %s_%s_%s\n', j, k, l);
+        fprintf('The file is located in %s\n', PathName);
+        if m ~= 4
+            citer = convertCharsToStrings(iteration{1, nfiles});
+            fprintf('Using iteration code %s\n', citer);
         end
-        break
-    end
-
-    if strcmpi(cjoint,k) ~= 1
-        fprintf('The metadata subject joint %s does not match for %s_%s_%s.\n', k, csub, cjoint, cdirection)
-        fprintf('The file is located in %s\n', PathName)
-        if m ~=4
-            citer = (iteration{1,nfiles});
-            citer = convertCharsToStrings(citer);
-            fprintf('Using iteration code %s\n', citer)
-        end
-        break
-    end
-
-    if strcmpi(cdirection,l) ~= 1
-        fprintf('The metadata subject direction %s does not match for %s_%s_%s.\n', l, csub, cjoint, cdirection)
-        fprintf('The file is located in %s\n', PathName)
-        if m ~=4
-            citer = (iteration{1,nfiles});
-            citer = convertCharsToStrings(citer);
-            fprintf('Using iteration code %s\n', citer)
-        end
-        break
+        break;
     end
 end
 
@@ -124,65 +96,18 @@ if strcmpi(exp,'y')
     if ~exist(location, 'dir')
         mkdir(dataFolder,'Biodex_Processed_Data')
     end
-    rMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'rMVC');
-    fMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'fMVC');
-    mMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'mMVC');
-    pMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'pMVC');
-    aMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'aMVC');
-    amMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'amMVC');
-    afMVC_folder = fullfile(dataFolder,'Biodex_Processed_Data', 'afMVC');
+    folders = {'rMVC', 'fMVC', 'mMVC', 'pMVC', 'aMVC', 'amMVC', 'afMVC'};
 
-    if ~exist(rMVC_folder, 'dir')
-        mkdir(rMVC_folder);
-    end
-    if ~exist(fMVC_folder, 'dir')
-        mkdir(fMVC_folder);
-    end
-    if ~exist(mMVC_folder, 'dir')
-        mkdir(mMVC_folder);
-    end
-    if ~exist(pMVC_folder, 'dir')
-        mkdir(pMVC_folder);
-    end
-    if ~exist(aMVC_folder, 'dir')
-        mkdir(aMVC_folder);
-    end
-    if ~exist(amMVC_folder, 'dir')
-        mkdir(amMVC_folder);
-    end
-    if ~exist(afMVC_folder, 'dir')
-        mkdir(afMVC_folder);
+    for folderIdx = 1:length(folders)
+        currFolder = fullfile(dataFolder, 'Biodex_Processed_Data', folders{folderIdx});
+        if ~exist(currFolder, 'dir')
+            mkdir(currFolder);
+        end
+        currFile = fullfile(currFolder, csub);
+        save(currFile, folders{folderIdx});
     end
 
-
-    %% save structs
-    rMVC_file = fullfile(rMVC_folder, csub);
-    fMVC_file = fullfile(fMVC_folder, csub);
-    mMVC_file = fullfile(mMVC_folder, csub);
-    pMVC_file = fullfile(pMVC_folder, csub);
-    aMVC_file = fullfile(aMVC_folder, csub);
-    amMVC_file = fullfile(amMVC_folder, csub);
-    afMVC_file = fullfile(afMVC_folder, csub);
-    %% save structs
-    save(rMVC_file, 'rMVC');
-    save(fMVC_file, 'fMVC');
-    save(mMVC_file, 'mMVC');
-    save(pMVC_file, 'pMVC');
-    save(aMVC_file, 'aMVC');
-    save(amMVC_file, 'amMVC');
-    save(afMVC_file, 'afMVC');
-    %% Var clearing
-    clear n change fn fname cng m iteration exp promt
-    clear PathName dataFolder
-    %csub = sprintf(csub);
-    %deMVC.dateModified = datetime;
-    %save(fullfile(location, csub))
-    %% Var clearing
-    clear location csub
-    clear afMVC_file afMVC_folder amMVC_file amMVC_folder aMVC_file aMVC_folder fMVC_file 
-    clear fMVC_folder mMVC_file mMVC_folder pMVC_file pMVC_folder rMVC_file rMVC_folder
+    clear n change fn fname cng m iteration exp promt csub PathName
 else
-    %% Var clearing
-    clear n change fn fname cng m iteration
-    clear location exp promt csub PathName
+    clear n change fn fname cng m iteration location exp promt csub PathName
 end
